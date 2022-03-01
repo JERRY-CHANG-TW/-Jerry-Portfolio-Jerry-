@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>長輩圖製作</title>
+
+    <!-- --------------- CSS Style --------------- -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <!-- 標題 -->
+    <header>
+        <h1>長輩圖製作</h1>
+    </header>
+    <div class="container">
+        <div class="canvasLab">
+            <!-- 畫布 -->
+            <canvas id="previewIMG" width="600" height="400"></canvas>
+            <div class="button">
+                <!-- 上傳圖片 -->
+                <div class="topMargin updateIMG">
+                    <label for="chooseFile">上傳圖片</label>
+                    <input id="chooseFile" type="file" onchange="readFile();" accept="image/*" />
+                </div>
+                <!-- 下載圖片 -->
+                <div class="topMargin updateIMG">
+                    <a id="downloadIMG" href="#" onclick="finish();">下載圖片</a>
+                </div>
+            </div>
+        </div>
+        <!-- 文字效果 -->
+        <div class="textStyle">
+            <!-- 文字大小 -->
+            <label for="fontSize" class="topMargin">文字大小:</label>
+            <input  id="fontSize" onchange="preview();" type="range" min="40" max="120" value="50" />
+            <!-- 文字框大小 -->
+            <label for="fontWidth" class="topMargin">文字框大小:</label>
+            <input  id="fontWidth" onchange="preview();" type="range" min="1" max="3" value="1" />
+            <!-- 文字顏色 -->
+            <label for="fontColor" class="topMargin">文字顏色:</label>
+            <input  id="fontColor" onchange="preview();" type="color" />
+            <!-- 邊框框顏色 -->
+            <label for="borderColor" class="topMargin">邊框顏色:</label>
+            <input  id="borderColor" onchange="preview();" type="color" />
+            <!-- 新增內容 -->
+            <label   for="msg" class="topMargin">新增內容:</label>
+            <textarea id="msg" onkeyup="addText();" placeholder="請輸入文字..."></textarea>
+        </div>
+    </div>
+
+    <!-- --------------- Javascript Style --------------- -->
+    <script>
+        var previewIMG  = document.getElementById("previewIMG")
+        var chooseFile  = document.getElementById("chooseFile");
+        var fontSize    = document.getElementById("fontSize");
+        var fontWidth   = document.getElementById("fontWidth");
+        var fontColor   = document.getElementById("fontColor");
+        var borderColor = document.getElementById("borderColor");
+        var downloadIMG = document.getElementById("downloadIMG");
+        
+        var context     = previewIMG.getContext("2d");
+        var msg         = document.getElementById("msg");
+        var img         = new Image();
+        
+        var newWidth, newHeight;
+
+        // 圖片讀取
+        function readFile() {
+            
+            let evt = window.event;
+
+            // 讀取檔案
+            let file   = evt.target.files[0];
+            let reader = new FileReader();
+
+            // 把檔案轉成 base64
+            reader.readAsDataURL(file);
+
+            // 轉換完執行
+            reader.onload = function(evt) {
+                img.src    = evt.target.result;
+                img.onload = function() {
+                    preview(img);
+                }
+            }
+        }
+
+        // 畫圖
+        function preview(img = null) {
+                    
+            if (img != null) {
+                if (img.width > img.height) {
+                    newWidth  = previewIMG.width;
+                    newHeight = img.height / (img.width / previewIMG.width);
+                } else {
+                    newHeight = previewIMG.height;
+                    newWidth  = img.width / ( img.height / previewIMG.height);
+                }
+                context.drawImage(img, (previewIMG.width - newWidth) / 2, (previewIMG.height - newHeight) / 2, newWidth, newHeight);
+            }
+
+            // 新增內容
+            addText();
+            
+            
+        }
+        
+        // 輸入文字
+        function addText() {
+            context.clearRect(0, 0, previewIMG.width, previewIMG.height);
+            context.drawImage(img, (previewIMG.width - newWidth) / 2, (previewIMG.height - newHeight) / 2, newWidth, newHeight);
+            context.font        = fontSize.value + "px New Times Roman sans-serif";
+            context.fillStyle   = fontColor.value + "";
+            context.strokeStyle = borderColor.value + "";
+            context.lineWidth   = fontWidth.value + "";
+            
+            let msgList = msg.value.split("\n");
+
+            for (let i = 0; i < msgList.length; i ++) {
+                context.fillText  (msgList[i], 50, previewIMG.height / 2  + fontSize.value * i);
+                context.strokeText(msgList[i], 50, previewIMG.height / 2  + fontSize.value * i);
+            }
+            
+        }
+    
+        // 下載圖片
+        function finish() {
+            downloadIMG.download = new Date().toLocaleString() + ".jpg";
+            downloadIMG.href     = previewIMG.toDataURL("image/png");
+        }
+    </script>
+</body>
+
+</html>
